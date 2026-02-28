@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>メモ帳 v3 </title>
+ <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLj1wZ8zW4WNCR42s3H08JmL8waGOY3BpwTg8uBmYMeQ&s=10" sizes="16×16" type="image/png" />  
+
+<style>
+:root{ --neon:#ff00ff; }
+
+body{
+  margin:0;
+  background:#000010;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  transition:0.3s;
+}
+
+h1{
+  color:var(--neon);
+  text-shadow:0 0 15px var(--neon);
+}
+
+textarea{
+  width:90%;
+  max-width:600px;
+  height:200px;
+  margin:10px;
+  padding:10px;
+  background:#111;
+  color:white;
+  border:1px solid var(--neon);
+  resize:none;
+  outline:none;
+  transition:0.3s;
+}
+
+#status{
+  font-size:14px;
+  color:#aaa;
+}
+</style>
+</head>
+
+<body>
+
+<h1>メモ帳 v3</h1>
+<textarea id="memo" placeholder="[[ここは安全]]"></textarea>
+<div id="status">監視中...</div>
+
+<script>
+const flipMap={
+a:"ɐ",b:"q",c:"ɔ",d:"p",e:"ǝ",f:"ɟ",g:"ƃ",
+h:"ɥ",i:"ᴉ",j:"ɾ",k:"ʞ",l:"l",m:"ɯ",n:"u",
+o:"o",p:"d",q:"b",r:"ɹ",s:"s",t:"ʇ",
+u:"n",v:"ʌ",w:"ʍ",x:"x",y:"ʎ",z:"z"
+};
+
+const fonts=[
+"monospace",
+"cursive",
+"fantasy",
+"serif",
+"sans-serif",
+"'Courier New'",
+"'Times New Roman'"
+];
+
+let glitchTimer;
+
+function flipChar(c){
+  return flipMap[c]||c;
+}
+
+function chaosProcess(text){
+
+  // 5% 全文消滅
+  if(Math.random()<0.05){
+    return "";
+  }
+
+  let safeParts=[];
+  let unsafe=text;
+
+  unsafe=unsafe.replace(/\[\[(.*?)\]\]/g,(m,p1)=>{
+    safeParts.push(p1);
+    return `§SAFE${safeParts.length-1}§`;
+  });
+
+  let arr=unsafe.split("");
+
+  for(let i=0;i<arr.length;i++){
+    if(Math.random()<0.15){
+      arr[i]=flipChar(arr[i]);
+    }
+  }
+
+  let result=arr.join("");
+
+  // 15%で安全地帯裏切り
+  if(Math.random()<0.15){
+    safeParts=safeParts.map(p=>{
+      return flipChar(p.split("").reverse().join(""));
+    });
+    document.getElementById("status").textContent="安全地帯が裏切りました...";
+  }
+
+  result=result.replace(/§SAFE(\d+)§/g,(m,i)=>{
+    return safeParts[i];
+  });
+
+  return result;
+}
+
+function randomFont(){
+  const f=fonts[Math.floor(Math.random()*fonts.length)];
+  document.getElementById("memo").style.fontFamily=f;
+}
+
+function startGlitch(){
+  if(glitchTimer) clearInterval(glitchTimer);
+
+  glitchTimer=setInterval(()=>{
+    let memo=document.getElementById("memo");
+    let current=memo.value;
+    if(current.length===0) return;
+
+    let broken=chaosProcess(current);
+    memo.value=broken;
+
+    randomFont();
+
+    localStorage.setItem("chaosMemoV3",broken);
+
+    if(broken===""){
+      document.getElementById("status").textContent="全文消滅しました...";
+    }else{
+      document.getElementById("status").textContent="改ざん中...";
+    }
+
+  },3000);
+}
+
+document.getElementById("memo").addEventListener("input",()=>{
+  startGlitch();
+});
+
+window.onload=()=>{
+  const saved=localStorage.getItem("chaosMemoV3");
+  if(saved){
+    document.getElementById("memo").value=saved;
+  }
+  startGlitch();
+};
+</script>
+
+</body>
+</html>
