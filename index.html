@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>メモ帳 v3 </title>
- <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLj1wZ8zW4WNCR42s3H08JmL8waGOY3BpwTg8uBmYMeQ&s=10" sizes="16×16" type="image/png" />  
-
+<title>改ざんメモ v4</title>
+ <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLj1wZ8zW4WNCR42s3H08JmL8waGOY3BpwTg8uBmYMeQ&s=10" sizes="16×16" type="image/png" /> 
 <style>
-:root{ --neon:#ff00ff; }
+:root{ --neon:#ff0055; }
 
 body{
   margin:0;
@@ -27,7 +26,7 @@ h1{
 textarea{
   width:90%;
   max-width:600px;
-  height:200px;
+  height:220px;
   margin:10px;
   padding:10px;
   background:#111;
@@ -47,8 +46,8 @@ textarea{
 
 <body>
 
-<h1>メモ帳 v3</h1>
-<textarea id="memo" placeholder="[[ここは安全]]"></textarea>
+<h1>改ざんメモ v4</h1>
+<textarea id="memo" placeholder="[[ここは安全…のはず]]"></textarea>
 <div id="status">監視中...</div>
 
 <script>
@@ -59,20 +58,28 @@ o:"o",p:"d",q:"b",r:"ɹ",s:"s",t:"ʇ",
 u:"n",v:"ʌ",w:"ʍ",x:"x",y:"ʎ",z:"z"
 };
 
+const randomChars="ΩΨΣΔ∞█▒░☠︎⚠︎★☆#!?";
+
 const fonts=[
-"monospace",
-"cursive",
-"fantasy",
-"serif",
-"sans-serif",
-"'Courier New'",
-"'Times New Roman'"
+"monospace","cursive","fantasy",
+"serif","sans-serif",
+"'Courier New'","'Times New Roman'"
 ];
 
 let glitchTimer;
 
-function flipChar(c){
-  return flipMap[c]||c;
+function mutateChar(c){
+  // 20% 別文字に変異
+  if(Math.random()<0.2){
+    return randomChars[Math.floor(Math.random()*randomChars.length)];
+  }
+
+  // 20% 逆さま
+  if(Math.random()<0.2){
+    return flipMap[c]||c;
+  }
+
+  return c;
 }
 
 function chaosProcess(text){
@@ -93,17 +100,23 @@ function chaosProcess(text){
   let arr=unsafe.split("");
 
   for(let i=0;i<arr.length;i++){
+
+    // 文字変異
+    arr[i]=mutateChar(arr[i]);
+
+    // 15% 増殖
     if(Math.random()<0.15){
-      arr[i]=flipChar(arr[i]);
+      arr.splice(i,0,arr[i]);
+      i++;
     }
   }
 
   let result=arr.join("");
 
-  // 15%で安全地帯裏切り
+  // 15% 安全地帯裏切り
   if(Math.random()<0.15){
     safeParts=safeParts.map(p=>{
-      return flipChar(p.split("").reverse().join(""));
+      return p.split("").map(c=>mutateChar(c)).join("");
     });
     document.getElementById("status").textContent="安全地帯が裏切りました...";
   }
@@ -133,12 +146,12 @@ function startGlitch(){
 
     randomFont();
 
-    localStorage.setItem("chaosMemoV3",broken);
+    localStorage.setItem("chaosMemoV4",broken);
 
     if(broken===""){
       document.getElementById("status").textContent="全文消滅しました...";
     }else{
-      document.getElementById("status").textContent="改ざん中...";
+      document.getElementById("status").textContent="改ざん進行中...";
     }
 
   },3000);
@@ -149,7 +162,7 @@ document.getElementById("memo").addEventListener("input",()=>{
 });
 
 window.onload=()=>{
-  const saved=localStorage.getItem("chaosMemoV3");
+  const saved=localStorage.getItem("chaosMemoV4");
   if(saved){
     document.getElementById("memo").value=saved;
   }
